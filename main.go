@@ -3,28 +3,27 @@ package main
 import (
 	"log"
 
+	"github.com/prakhar0009/go-todo/config"
 	"github.com/prakhar0009/go-todo/database"
 	"github.com/prakhar0009/go-todo/server"
 )
 
 func main() {
+	config.LoadConfig()
+
 	err := database.ConnectandMigrate(
-		"localhost",
-		"5432",
-		"todo_db",
-		"local",
-		"local",
-		database.SSLModeDisable,
+		config.GetEnv("DB_HOST", "localhost"),
+		config.GetEnv("DB_PORT", "5432"),
+		config.GetEnv("DB_NAME", "todo_db"),
+		config.GetEnv("DB_USER", "postgres"),
+		config.GetEnv("DB_PASSWORD", "password"),
+		database.SSLMode(config.GetEnv("DB_SSLMODE", "disable")),
 	)
-
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		log.Fatal(err)
 	}
-	log.Println("Database connected and migrated successfully")
-	r := server.NewServer()
 
-	log.Println("Server starting on http://localhost:8080")
-	if err := r.Run(":8080"); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
-	}
+	r := server.NewServer()
+	port := config.GetEnv("PORT", "8080")
+	r.Run(":" + port)
 }
