@@ -66,7 +66,9 @@ func Login(c *gin.Context) {
 	expiry := time.Now().Add(60 * 24 * time.Hour)
 	sessionID, err := dbHelper.CreateUserSession(user.ID, expiry)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create session"})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
 		return
 	}
 
@@ -78,11 +80,13 @@ func Logout(c *gin.Context) {
 	sessionID := c.GetHeader("Authorization")
 	if sessionID == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header is required"})
+		return
 	}
-
 	err := dbHelper.DeleteUserSession(sessionID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete session"})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "User logged out", "session_id": sessionID})

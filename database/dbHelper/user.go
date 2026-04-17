@@ -1,6 +1,7 @@
 package dbHelper
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/prakhar0009/go-todo/database"
@@ -15,36 +16,52 @@ func IsUserExist(username string) (bool, error) {
 }
 
 func CreateUser(email, username, password string) error {
-	query := `INSERT INTO users(email, username, password)VALUES ($1, TRIM(LOWER($2)), $3)`
-	_, err := database.Todo.Exec(query, email, username, password)
-	if err != nil {
-		return nil
-	}
+	_, err := database.Todo.Exec(
+		"INSERT INTO users (email, username, password) VALUES ($1, $2, $3)",
+		email, username, password,
+	)
 	return err
 }
 
 func GetUserByEmail(email string) (*models.User, error) {
 	var user models.User
-	query := `SELECT id, password FROM users WHERE email = $1 AND archived_at IS NULL`
-	err := database.Todo.Get(&user, query, email)
+
+	err := database.Todo.Get(
+		&user,
+		"SELECT id, email, username, password FROM users WHERE email=$1 AND archived_at IS NULL",
+		email,
+	)
+
 	if err != nil {
 		return nil, err
 	}
-	return &user, err
+
+	return &user, nil
 }
 
-func CreateUserSession(user_id string, expiresAt time.Time) (string, error) {
+func CreateUserSession(userID string, expiry time.Time) (string, error) {
 	var sessionID string
-	query := `INSERT INTO user_session(user_id, expires_at)VALUES ($1, $2)`
-	err := database.Todo.Get(&sessionID, query, user_id, expiresAt)
-	if err != nil {
-		return "", err
-	}
-	return sessionID, nil
+
+	err := database.Todo.QueryRow(
+		"INSERT INTO user_session (user_id, expires_at) VALUES ($1, $2) RETURNING id",
+		userID, expiry,
+	).Scan(&sessionID)
+
+	return sessionID, err
 }
 
 func DeleteUserSession(sessionID string) error {
-	query := `UPDATE user_session SET archived_at = NOW() WHERE user_id = $1`
-	_, err := database.Todo.Exec(query, sessionID)
-	return err
+	res, err := database.Todo.Exec(
+		"UPDATE user_session SET archived_at = NOW() WHERE id=$1 AND archived_at IS NULL",
+		sessionID,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	rows, _ := res.RowsAffected()
+	fmt.Println("ROWS UPDATED:", rows)
+
+	return nil
 }

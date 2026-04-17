@@ -6,7 +6,10 @@ import (
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 )
 
 var Todo *sqlx.DB
@@ -18,7 +21,7 @@ type SSLMode string
 func ConnectandMigrate(host, port, databaseName, user, password string, sslMode SSLMode) error {
 	connectionStr := fmt.Sprintf("host=%s port=%s dbname=%s user=%s password=%s sslmode=%s", host, port, databaseName, user, password, sslMode)
 
-	DB, err := sqlx.Open("postgres", connectionStr)
+	DB, err := sqlx.Open("pgx", connectionStr)
 	if err != nil {
 		return err
 	}
