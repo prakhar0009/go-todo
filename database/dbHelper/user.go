@@ -1,6 +1,8 @@
 package dbHelper
 
 import (
+	"time"
+
 	"github.com/prakhar0009/go-todo/database"
 	"github.com/prakhar0009/go-todo/models"
 )
@@ -13,7 +15,6 @@ func IsUserExist(username string) (bool, error) {
 }
 
 func CreateUser(email, username, password string) error {
-
 	query := `INSERT INTO users(email, username, password)VALUES ($1, TRIM(LOWER($2)), $3)`
 	_, err := database.Todo.Exec(query, email, username, password)
 	if err != nil {
@@ -32,10 +33,18 @@ func GetUserByEmail(email string) (*models.User, error) {
 	return &user, err
 }
 
-//func CreateUserSession(email, username, password string) (string, error) {
-//
-//}
-//
-//func DeleteUserSession(email string) error {
-//
-//}
+func CreateUserSession(user_id string, expiresAt time.Time) (string, error) {
+	var sessionID string
+	query := `INSERT INTO user_session(user_id, expires_at)VALUES ($1, $2)`
+	err := database.Todo.Get(&sessionID, query, user_id, expiresAt)
+	if err != nil {
+		return "", err
+	}
+	return sessionID, nil
+}
+
+func DeleteUserSession(sessionID string) error {
+	query := `UPDATE user_session SET archived_at = NOW() WHERE user_id = $1`
+	_, err := database.Todo.Exec(query, sessionID)
+	return err
+}

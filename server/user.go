@@ -6,11 +6,10 @@ import (
 )
 
 func SetupUserRoutes(r *gin.Engine) {
-	r.POST("/register", handler.Register)
-	r.POST("/login", handler.Login)
-
-	//authorized := r.Group("/")
-	//authorized.Use(middleware.AuthRequired()){
-	//	authorized.POST("/logout", handler.Logout)
-	//}
+	v1 := r.Group("/api/v1")
+	{
+		v1.POST("/register", handler.Register)
+		v1.POST("/login", handler.Login)
+		v1.POST("/logout", handler.Logout)
+	}
 }
