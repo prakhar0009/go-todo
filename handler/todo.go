@@ -23,6 +23,7 @@ func CreateTodo(c *gin.Context) {
 	var input struct {
 		Title       string `json:"title" binding:"required"`
 		Description string `json:"description" binding:"required"`
+		// expiry_at
 	}
 
 	if err := c.BindJSON(&input); err != nil {
@@ -95,6 +96,8 @@ func UpdateTodo(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
+
+	todoID := c.Param("id")
 	var input struct {
 		ID          string `json:"id" binding:"required"`
 		Title       string `json:"title"`
@@ -106,7 +109,7 @@ func UpdateTodo(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
 		return
 	}
-	oldTodo, err := dbHelper.GetTodoBYID(userID, input.ID)
+	oldTodo, err := dbHelper.GetTodoBYID(userID, todoID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "todo not found"})
 		return
@@ -137,4 +140,22 @@ func UpdateTodo(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, updatedTodo)
+}
+
+func DeleteTodo(c *gin.Context) {
+	sessionID := c.GetHeader("Authorization")
+	userID, err := dbHelper.GetUserBySession(sessionID)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	todoID := c.Param("id")
+
+	err = dbHelper.DeleteTodo(userID, todoID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Todo archived successfully"})
 }

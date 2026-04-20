@@ -39,7 +39,8 @@ func UpdateTodo(todo models.Todo) (models.Todo, error) {
 				UPDATE todo 
 				SET title = $1, description = $2, is_completed = $3
 				WHERE id = $4 AND user_id = $5 AND archived_at IS NULL
-				RETURNING id, user_id, title, description, is_completed, expires_at, created_at`
+				RETURNING id, user_id, title, description, is_completed, expires_at, created_at
+				`
 	err := database.Todo.Get(&updated, query, todo.Title, todo.Description, todo.IsCompleted, todo.ID, todo.UserID)
 	return updated, err
 }
