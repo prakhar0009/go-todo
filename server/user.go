@@ -10,6 +10,6 @@ func SetupUserRoutes(r *gin.Engine) {
 	{
 		v1.POST("/register", handler.Register)
 		v1.POST("/login", handler.Login)
-		v1.POST("/logout", handler.Logout)
+		v1.PUT("/logout", handler.Logout)
 	}
 }

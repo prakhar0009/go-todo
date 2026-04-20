@@ -65,3 +65,12 @@ func DeleteUserSession(sessionID string) error {
 
 	return nil
 }
+func GetUserBySession(sessionID string) (string, error) {
+	query := `select user_id from user_session where id=$1 and archived_at IS NULL`
+	var userId string
+	err := database.Todo.Get(&userId, query, sessionID)
+	if err != nil {
+		return "", err
+	}
+	return userId, nil
+}

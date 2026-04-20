@@ -8,5 +8,6 @@ func NewServer() *gin.Engine {
 	r := gin.Default()
 	r.Use(gin.Recovery())
 	SetupUserRoutes(r)
+	SetupTodoRoutes(r)
 	return r
 }
