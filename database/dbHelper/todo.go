@@ -17,17 +17,25 @@ func CreateTodo(userID, title, description string, expiresAt time.Time) (string,
 	return todoID, nil
 }
 
-func GetTodo(userID, id string) (models.Todo, error) {
+func GetAllTodo(userID string) (models.Todo, error) {
+	var todo models.Todo
+	query := `SELECT * FROM todo WHERE user_id = $1 AND archived_at IS NULL`
+	err := database.Todo.Get(&todo, query, userID)
+	return todo, err
+}
+
+func GetTodoBYID(userID, id string) (models.Todo, error) {
 	var todo models.Todo
 	query := `SELECT * FROM todo WHERE user_id = $1 AND id = $2 AND archive_at IS NULL`
 	err := database.Todo.Get(&todo, query, userID, id)
 	return todo, err
 }
 
-func UpdateTodo(userID, id, title, description string) error {
-	query := `UPDATE todo SET title = $1, description = $2 WHERE id = $3 AND user_id = $4`
+func UpdateTodo(userID, id, title, description string) (models.Todo, error) {
+	var updatedTodo models.Todo
+	query := `UPDATE todo SET title = $1, description = $2 WHERE id = $3 AND user_id = $4 AND archived_at IS NULL RETURNING *`
 	_, err := database.Todo.Exec(query, title, description, id, userID)
-	return err
+	return updatedTodo, err
 }
 
 func DeleteTodo(userID, id string) error {
