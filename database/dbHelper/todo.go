@@ -1,6 +1,7 @@
 package dbHelper
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/prakhar0009/go-todo/database"
@@ -14,6 +15,7 @@ func CreateTodo(userID, title, description string, expiresAt time.Time) (string,
 				VALUES ($1, $2, $3, $4, true) RETURNING id`
 	err := database.Todo.Get(&todoID, query, userID, title, description, expiresAt)
 	if err != nil {
+		fmt.Println("DATABASE ERROR:", err)
 		return "", err
 	}
 	return todoID, nil
@@ -23,7 +25,7 @@ func GetAllTodo(userID string) ([]models.Todo, error) {
 	var todos []models.Todo
 	query := `
 				SELECT id, user_id, title, description, is_completed, is_incomplete, is_pending, expires_at, created_at 
-	          	FROM todo WHERE user_id = $1 AND id = $2 AND archived_at IS NULL
+	          	FROM todo WHERE user_id = $1 AND archived_at IS NULL
 	          	`
 	err := database.Todo.Select(&todos, query, userID)
 	return todos, err

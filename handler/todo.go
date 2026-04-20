@@ -34,7 +34,14 @@ func CreateTodo(c *gin.Context) {
 		return
 	}
 
-	todoID, err := dbHelper.CreateTodo(userID, input.Title, input.Description /*input.ExpiresAt*/, time.Now())
+	layout := "2006-01-02 15:04:05"
+
+	expiry, err := time.Parse(layout, input.ExpiresAt)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format."})
+	}
+
+	todoID, err := dbHelper.CreateTodo(userID, input.Title, input.Description, expiry)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create todo"})
 		return
