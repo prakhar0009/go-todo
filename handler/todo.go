@@ -62,7 +62,7 @@ func GetAllTodo(c *gin.Context) {
 	c.JSON(http.StatusOK, todos)
 }
 
-func GetTodo(c *gin.Context) {
+func GetTodoByID(c *gin.Context) {
 	sessionID := c.GetHeader("Authorization")
 	if sessionID == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
@@ -74,20 +74,14 @@ func GetTodo(c *gin.Context) {
 		return
 	}
 
-	var input struct {
-		ID string `json:"id" binding:"required"`
-	}
+	todoID := c.Param("id")
 
-	if err := c.BindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	}
-
-	todoID, err := dbHelper.GetTodoBYID(userID, input.ID)
+	todo, err := dbHelper.GetTodoBYID(userID, todoID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, todoID)
+	c.JSON(http.StatusOK, todo)
 }
 
 func UpdateTodo(c *gin.Context) {

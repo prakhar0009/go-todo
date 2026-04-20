@@ -7,5 +7,5 @@ type Todo struct {
 	Description string `json:"description" db:"description"`
 	ExpiresAt   string `json:"expires_at" db:"expires_at"`
 	CreatedAt   string `json:"created_at" db:"created_at"`
-	ArchivedAt  string `json:"archived_at" db:"archived_at,omitempty"`
+	//ArchivedAt  string `json:"archived_at" db:"archived_at,omitempty"`
 }
