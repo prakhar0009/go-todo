@@ -97,16 +97,43 @@ func UpdateTodo(c *gin.Context) {
 	}
 	var input struct {
 		ID          string `json:"id" binding:"required"`
-		Title       string `json:"title" binding:"required"`
-		Description string `json:"description" binding:"required"`
+		Title       string `json:"title"`
+		Description string `json:"description"`
+		IsCompleted string `json:"is_completed"`
 	}
+
 	if err := c.BindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
 		return
 	}
-	updatedTodo, err := dbHelper.UpdateTodo(userID, input.ID, input.Title, input.Description)
+	oldTodo, err := dbHelper.GetTodoBYID(userID, input.ID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, gin.H{"error": "todo not found"})
+		return
+	}
+
+	if input.Title != "" {
+		oldTodo.Title = input.Title
+	}
+
+	if input.Description != "" {
+		oldTodo.Description = input.Description
+	}
+
+	if input.IsCompleted != "" {
+		if input.IsCompleted == "true" {
+			oldTodo.IsCompleted = true
+		} else if input.IsCompleted == "false" {
+			oldTodo.IsCompleted = false
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "is_completed must be 'true' or 'false' string only"})
+			return
+		}
+	}
+
+	updatedTodo, err := dbHelper.UpdateTodo(oldTodo)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Update failed"})
 		return
 	}
 	c.JSON(http.StatusOK, updatedTodo)

@@ -33,11 +33,15 @@ func GetTodoBYID(userID, id string) (models.Todo, error) {
 	return todo, err
 }
 
-func UpdateTodo(userID, id, title, description string) (models.Todo, error) {
-	var updatedTodo models.Todo
-	query := `UPDATE todo SET title = $1, description = $2 WHERE id = $3 AND user_id = $4 AND archived_at IS NULL RETURNING *`
-	_, err := database.Todo.Exec(query, title, description, id, userID)
-	return updatedTodo, err
+func UpdateTodo(todo models.Todo) (models.Todo, error) {
+	var updated models.Todo
+	query := `
+				UPDATE todo 
+				SET title = $1, description = $2, is_completed = $3
+				WHERE id = $4 AND user_id = $5 AND archived_at IS NULL
+				RETURNING id, user_id, title, description, is_completed, expires_at, created_at`
+	err := database.Todo.Get(&updated, query, todo.Title, todo.Description, todo.IsCompleted, todo.ID, todo.UserID)
+	return updated, err
 }
 
 func DeleteTodo(userID, id string) error {
