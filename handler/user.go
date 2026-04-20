@@ -6,15 +6,17 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/prakhar0009/go-todo/database/dbHelper"
+	"github.com/prakhar0009/go-todo/models"
 	"github.com/prakhar0009/go-todo/utils"
 )
 
 func Register(c *gin.Context) {
-	var input struct {
-		Email    string `json:"email" binding:"required,email"`
-		Username string `json:"username" binding:"required"`
-		Password string `json:"password" binding:"required"`
-	}
+	//var input struct {
+	//	Email    string `json:"email" binding:"required,email"`
+	//	Username string `json:"username" binding:"required"`
+	//	Password string `json:"password" binding:"required"`
+	//}
+	var input models.CreateUser
 
 	if err := c.BindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -43,10 +45,12 @@ func Register(c *gin.Context) {
 }
 
 func Login(c *gin.Context) {
-	var input struct {
-		Email    string `json:"email" binding:"required,email"`
-		Password string `json:"password" binding:"required"`
-	}
+	//var input struct {
+	//	Email    string `json:"email" binding:"required,email"`
+	//	Password string `json:"password" binding:"required"`
+	//}
+	var input models.LoginUser
+
 	if err := c.BindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
