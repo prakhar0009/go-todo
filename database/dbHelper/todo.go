@@ -21,21 +21,26 @@ func CreateTodo(userID, title, description string, expiresAt time.Time) (string,
 	return todoID, nil
 }
 
-func GetAllTodo(userID string, filter string) ([]models.Todo, error) {
+func GetAllTodo(userID string, status string) ([]models.Todo, error) {
 	todos := make([]models.Todo, 0)
 
 	query := `SELECT id, user_id, title, description, is_completed, is_incomplete, is_pending, expires_at, created_at 
 	          FROM todo WHERE user_id = $1 AND archived_at IS NULL`
+
 	var args []interface{}
 	args = append(args, userID)
 
-	switch filter {
-	case "completed":
-		query += " AND is_completed = true"
-	case "incomplete":
-		query += " AND is_completed = false AND expires_at > NOW()"
-	case "pending":
-		query += " AND is_completed = false AND expires_at <= NOW()"
+	if status != "" {
+		switch status {
+		case "completed":
+			query += " AND is_completed = true"
+		case "incomplete":
+			query += " AND is_completed = false AND expires_at > NOW()"
+		case "pending":
+			query += " AND is_completed = false AND expires_at <= NOW()"
+		default:
+			query += " AND 1=0"
+		}
 	}
 
 	query += " ORDER BY created_at DESC"

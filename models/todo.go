@@ -28,17 +28,24 @@ type UpdateTodo struct {
 }
 
 func (t *Todo) SyncStatus() {
-	layout := "2006-01-02 15:04:05"
-	expiry, _ := time.Parse(layout, t.ExpiresAt)
-	isDone := t.IsCompleted
-	t.IsCompleted, t.IsIncomplete, t.IsPending = false, false, false
+	if t.IsCompleted {
+		t.IsIncomplete = false
+		t.IsPending = false
+		return
+	}
 
-	switch {
-	case isDone:
-		t.IsCompleted = true
-	case time.Now().After(expiry):
+	expiry, err := time.Parse(time.RFC3339, t.ExpiresAt)
+	if err != nil {
+		t.IsIncomplete = true
+		t.IsPending = false
+		return
+	}
+
+	if time.Now().After(expiry) {
 		t.IsPending = true
-	default:
+		t.IsIncomplete = false
+	} else {
+		t.IsPending = false
 		t.IsIncomplete = true
 	}
 }

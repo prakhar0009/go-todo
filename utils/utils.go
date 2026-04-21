@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -19,8 +18,4 @@ func HashPassword(password string) (string, error) {
 func CheckPassword(hashedPassword, password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	return err == nil
-}
-
-func RespondError(c gin.Context, status int, e Error) {
-
 }
