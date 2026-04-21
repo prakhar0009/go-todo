@@ -24,7 +24,7 @@ func CreateTodo(userID, title, description string, expiresAt time.Time) (string,
 func GetTodos(userID string, status string) ([]models.Todo, error) {
 	todos := make([]models.Todo, 0)
 
-	query := `SELECT id, user_id, title, description, is_completed, is_incomplete, is_pending, expires_at, created_at 
+	query := `SELECT id, user_id, title, description, is_completed, is_incomplete, expires_at, created_at 
 	          FROM todo WHERE user_id = $1 AND archived_at IS NULL`
 
 	var args []interface{}
@@ -52,7 +52,7 @@ func GetTodos(userID string, status string) ([]models.Todo, error) {
 func GetTodoBYID(userID, id string) (models.Todo, error) {
 	var todo models.Todo
 	query := `
-				SELECT id, user_id, title, description, is_completed, is_incomplete, is_pending, expires_at, created_at 
+				SELECT id, user_id, title, description, is_completed, is_incomplete, expires_at, created_at 
 	          	FROM todo WHERE user_id = $1 AND id = $2 AND archived_at IS NULL
 	          	`
 	err := database.Todo.Get(&todo, query, userID, id)

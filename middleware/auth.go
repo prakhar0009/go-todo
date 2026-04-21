@@ -11,13 +11,13 @@ func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		sessionID := c.GetHeader("Authorization")
 		if sessionID == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authentication required."})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication required."})
 			return
 		}
 
 		userID, err := dbHelper.GetUserBySession(sessionID)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired session."})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired session."})
 			return
 		}
 
