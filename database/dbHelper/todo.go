@@ -45,7 +45,9 @@ func UpdateTodo(todo models.Todo) (models.Todo, error) {
 	var updated models.Todo
 	query := `
 				UPDATE todo 
-				SET title = $1, description = $2, is_completed = $3, is_incomplete = $4, is_pending = $5
+				SET title = COALESCE(NULLIF($1, ''), title),
+				description = COALESCE(NULLIF($2, ''), description),
+				is_completed = $3, is_incomplete = $4, is_pending = $5
 				WHERE id = $6 AND user_id = $7 AND archived_at IS NULL
 				RETURNING id, user_id, title, description, is_completed, is_incomplete, is_pending, expires_at, created_at
 				`

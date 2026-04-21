@@ -3,10 +3,12 @@ package server
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/prakhar0009/go-todo/handler"
+	"github.com/prakhar0009/go-todo/middleware"
 )
 
 func SetupTodoRoutes(r *gin.Engine) {
 	v1 := r.Group("/api/v1")
+	v1.Use(middleware.AuthMiddleware())
 	{
 		v1.POST("/todo", handler.CreateTodo)
 		v1.GET("/todos", handler.GetAllTodo)

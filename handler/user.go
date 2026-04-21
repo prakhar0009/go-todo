@@ -11,25 +11,21 @@ import (
 )
 
 func Register(c *gin.Context) {
-	//var input struct {
-	//	Email    string `json:"email" binding:"required,email"`
-	//	Username string `json:"username" binding:"required"`
-	//	Password string `json:"password" binding:"required"`
-	//}
+
 	var input models.CreateUser
 
-	if err := c.BindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
 
-	userExist, err := dbHelper.IsUserExist(input.Username)
+	isUserExist, err := dbHelper.IsUserExist(input.Username)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
 		return
 	}
 
-	if userExist {
+	if isUserExist {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "User already exist"})
 		return
 	}
@@ -37,7 +33,7 @@ func Register(c *gin.Context) {
 	hashedPass, _ := utils.HashPassword(input.Password)
 	err = dbHelper.CreateUser(input.Email, input.Username, hashedPass)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
 		return
 	}
 
@@ -45,14 +41,11 @@ func Register(c *gin.Context) {
 }
 
 func Login(c *gin.Context) {
-	//var input struct {
-	//	Email    string `json:"email" binding:"required,email"`
-	//	Password string `json:"password" binding:"required"`
-	//}
+
 	var input models.LoginUser
 
-	if err := c.BindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Email and password required"})
 		return
 	}
 
@@ -71,25 +64,28 @@ func Login(c *gin.Context) {
 	sessionID, err := dbHelper.CreateUserSession(user.ID, expiry)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
+			"error": "Failed to create login session",
 		})
 		return
 	}
 
 	//c.SetCookie("session_token", sessionID, 60*24*3600, "/", "", false, true)
-	c.JSON(http.StatusOK, gin.H{"message": "User logged in", "session_id": sessionID})
+	c.JSON(http.StatusOK, gin.H{
+		"message":    "User logged in successfully",
+		"session_id": sessionID,
+	})
 }
 
 func Logout(c *gin.Context) {
 	sessionID := c.GetHeader("Authorization")
 	if sessionID == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header is required"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "No active session"})
 		return
 	}
 	err := dbHelper.DeleteUserSession(sessionID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
+			"error": "Failed to delete user session",
 		})
 		return
 	}
