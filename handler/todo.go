@@ -39,14 +39,16 @@ func CreateTodo(c *gin.Context) {
 }
 
 func GetAllTodo(c *gin.Context) {
-
 	userID := c.GetString("userID")
 
-	todos, err := dbHelper.GetAllTodo(userID)
+	statusFilter := c.Query("status")
+
+	todos, err := dbHelper.GetAllTodo(userID, statusFilter)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to get all todos"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve tasks."})
 		return
 	}
+
 	for i := range todos {
 		todos[i].SyncStatus()
 	}

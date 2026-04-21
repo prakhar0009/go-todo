@@ -21,13 +21,26 @@ func CreateTodo(userID, title, description string, expiresAt time.Time) (string,
 	return todoID, nil
 }
 
-func GetAllTodo(userID string) ([]models.Todo, error) {
-	var todos []models.Todo
-	query := `
-				SELECT id, user_id, title, description, is_completed, is_incomplete, is_pending, expires_at, created_at 
-	          	FROM todo WHERE user_id = $1 AND archived_at IS NULL
-	          	`
-	err := database.Todo.Select(&todos, query, userID)
+func GetAllTodo(userID string, filter string) ([]models.Todo, error) {
+	todos := make([]models.Todo, 0)
+
+	query := `SELECT id, user_id, title, description, is_completed, is_incomplete, is_pending, expires_at, created_at 
+	          FROM todo WHERE user_id = $1 AND archived_at IS NULL`
+	var args []interface{}
+	args = append(args, userID)
+
+	switch filter {
+	case "completed":
+		query += " AND is_completed = true"
+	case "incomplete":
+		query += " AND is_completed = false AND expires_at > NOW()"
+	case "pending":
+		query += " AND is_completed = false AND expires_at <= NOW()"
+	}
+
+	query += " ORDER BY created_at DESC"
+
+	err := database.Todo.Select(&todos, query, args...)
 	return todos, err
 }
 
@@ -60,7 +73,7 @@ func UpdateTodo(todo models.Todo) (models.Todo, error) {
 func DeleteTodo(userID, id string) error {
 	query := `
 				UPDATE todo
-				SET archive_at = NOW()
+				SET archived_at = NOW()
 				WHERE id = $1 AND user_id = $2
 				`
 	_, err := database.Todo.Exec(query, id, userID)
