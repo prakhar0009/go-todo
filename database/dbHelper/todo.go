@@ -21,7 +21,7 @@ func CreateTodo(userID, title, description string, expiresAt time.Time) (string,
 	return todoID, nil
 }
 
-func GetAllTodo(userID string, status string) ([]models.Todo, error) {
+func GetTodos(userID string, status string) ([]models.Todo, error) {
 	todos := make([]models.Todo, 0)
 
 	query := `SELECT id, user_id, title, description, is_completed, is_incomplete, is_pending, expires_at, created_at 

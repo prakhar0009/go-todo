@@ -38,11 +38,11 @@ func CreateTodo(c *gin.Context) {
 	})
 }
 
-func GetAllTodo(c *gin.Context) {
+func GetTodos(c *gin.Context) {
 	userID := c.GetString("userID")
 	status := c.Query("status")
 
-	todos, err := dbHelper.GetAllTodo(userID, status)
+	todos, err := dbHelper.GetTodos(userID, status)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
 		return

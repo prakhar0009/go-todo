@@ -8,10 +8,14 @@ import (
 
 func SetupUserRoutes(r *gin.Engine) {
 	v1 := r.Group("/api/v1")
+
+	// Public routes
+	v1.POST("/register", handler.Register)
+	v1.POST("/login", handler.Login)
+
+	//Protected routes
 	v1.Use(middleware.AuthMiddleware())
 	{
-		v1.POST("/register", handler.Register)
-		v1.POST("/login", handler.Login)
 		v1.PUT("/logout", handler.Logout)
 	}
 }
