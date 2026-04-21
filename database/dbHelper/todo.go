@@ -11,8 +11,8 @@ import (
 func CreateTodo(userID, title, description string, expiresAt time.Time) (string, error) {
 	var todoID string
 	query := `
-				INSERT INTO todo(user_id, title, description, expires_at, is_incomplete)
-				VALUES ($1, $2, $3, $4, true) RETURNING id`
+				INSERT INTO todo(user_id, title, description, expires_at, is_incomplete, is_pending)
+				VALUES ($1, $2, $3, $4, true, false) RETURNING id`
 	err := database.Todo.Get(&todoID, query, userID, title, description, expiresAt)
 	if err != nil {
 		fmt.Println("DATABASE ERROR:", err)
@@ -24,7 +24,7 @@ func CreateTodo(userID, title, description string, expiresAt time.Time) (string,
 func GetTodos(userID string, status string) ([]models.Todo, error) {
 	todos := make([]models.Todo, 0)
 
-	query := `SELECT id, user_id, title, description, is_completed, is_incomplete, expires_at, created_at 
+	query := `SELECT id, user_id, title, description, is_completed, is_incomplete, is_pending, expires_at, created_at 
 	          FROM todo WHERE user_id = $1 AND archived_at IS NULL`
 
 	var args []interface{}
@@ -52,7 +52,7 @@ func GetTodos(userID string, status string) ([]models.Todo, error) {
 func GetTodoBYID(userID, id string) (models.Todo, error) {
 	var todo models.Todo
 	query := `
-				SELECT id, user_id, title, description, is_completed, is_incomplete, expires_at, created_at 
+				SELECT id, user_id, title, description, is_completed, is_incomplete, is_pending, expires_at, created_at 
 	          	FROM todo WHERE user_id = $1 AND id = $2 AND archived_at IS NULL
 	          	`
 	err := database.Todo.Get(&todo, query, userID, id)
@@ -62,13 +62,15 @@ func GetTodoBYID(userID, id string) (models.Todo, error) {
 func UpdateTodo(todo models.Todo) (models.Todo, error) {
 	var updated models.Todo
 	query := `
-				UPDATE todo 
-				SET title = COALESCE(NULLIF($1, ''), title),
-				description = COALESCE(NULLIF($2, ''), description),
-				is_completed = $3, is_incomplete = $4, is_pending = $5
-				WHERE id = $6 AND user_id = $7 AND archived_at IS NULL
-				RETURNING id, user_id, title, description, is_completed, is_incomplete, is_pending, expires_at, created_at
-				`
+		UPDATE todo 
+		SET title = COALESCE(NULLIF($1, ''), title),
+		    description = COALESCE(NULLIF($2, ''), description),
+		    is_completed = $3, 
+		    is_incomplete = $4, 
+		    is_pending = $5
+		WHERE id = $6 AND user_id = $7 AND archived_at IS NULL
+		RETURNING id, user_id, title, description, is_completed, is_incomplete, is_pending, expires_at, created_at`
+
 	err := database.Todo.Get(&updated, query,
 		todo.Title, todo.Description, todo.IsCompleted,
 		todo.IsIncomplete, todo.IsPending, todo.ID, todo.UserID)

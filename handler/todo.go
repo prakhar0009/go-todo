@@ -24,6 +24,7 @@ func CreateTodo(c *gin.Context) {
 	expiry, err := time.Parse(layout, input.ExpiresAt)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format."})
+		return
 	}
 
 	todoID, err := dbHelper.CreateTodo(userID, input.Title, input.Description, expiry)
@@ -66,13 +67,12 @@ func GetTodoByID(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Task not found or Unauthorized user"})
 		return
 	}
+	todo.SyncStatus()
 	c.JSON(http.StatusOK, todo)
 }
 
 func UpdateTodo(c *gin.Context) {
-
 	userID := c.GetString("userID")
-
 	todoID := c.Param("id")
 
 	var input models.UpdateTodo
@@ -104,6 +104,7 @@ func UpdateTodo(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Update failed"})
 		return
 	}
+
 	c.JSON(http.StatusOK, updatedTodo)
 }
 

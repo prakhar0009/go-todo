@@ -12,10 +12,10 @@ func main() {
 	config.LoadConfig()
 
 	err := database.ConnectandMigrate(
-		config.GetEnv("DB_HOST", "localhost"),
-		config.GetEnv("DB_PORT", "5432"),
-		config.GetEnv("DB_NAME", "todo_db"),
-		config.GetEnv("DB_USER", "local"),
+		config.GetEnv("DB_HOST", "-"),
+		config.GetEnv("DB_PORT", "-"),
+		config.GetEnv("DB_NAME", "-"),
+		config.GetEnv("DB_USER", "-"),
 		config.GetEnv("DB_PASSWORD", "password"),
 		database.SSLMode(config.GetEnv("DB_SSLMODE", "disable")),
 	)
