@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -43,7 +44,22 @@ func GetTodos(c *gin.Context) {
 	userID := c.GetString("userID")
 	status := c.Query("status")
 
-	todos, err := dbHelper.GetTodos(userID, status)
+	pageStr := c.DefaultQuery("page", "1")
+	limitStr := c.DefaultQuery("limit", "10")
+
+	page, err := strconv.Atoi(pageStr)
+	limit, err := strconv.Atoi(limitStr)
+
+	offset := (page - 1) * limit
+
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 10
+	}
+
+	todos, err := dbHelper.GetTodos(userID, status, limit, offset)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
 		return

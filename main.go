@@ -17,7 +17,7 @@ func main() {
 		config.GetEnv("DB_NAME", "-"),
 		config.GetEnv("DB_USER", "-"),
 		config.GetEnv("DB_PASSWORD", "password"),
-		database.SSLMode(config.GetEnv("DB_SSLMODE", "disable")),
+		database.SSLMode(config.GetEnv("DB_SSLMode", "disable")),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -26,4 +26,5 @@ func main() {
 	r := server.NewServer()
 	port := config.GetEnv("PORT", "8080")
 	r.Run(":" + port)
+
 }

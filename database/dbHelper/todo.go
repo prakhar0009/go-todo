@@ -11,7 +11,14 @@ import (
 func CreateTodo(userID, title, description string, expiresAt time.Time) (string, error) {
 	var todoID string
 	query := `
-				INSERT INTO todo(user_id, title, description, expires_at, is_incomplete, is_pending)
+				INSERT INTO todo(
+				                 user_id,
+				                 title,
+				                 description,
+				                 expires_at,
+				                 is_incomplete,
+				                 is_pending
+								 )
 				VALUES ($1, $2, $3, $4, true, false) RETURNING id`
 	err := database.Todo.Get(&todoID, query, userID, title, description, expiresAt)
 	if err != nil {
@@ -21,11 +28,22 @@ func CreateTodo(userID, title, description string, expiresAt time.Time) (string,
 	return todoID, nil
 }
 
-func GetTodos(userID string, status string) ([]models.Todo, error) {
+func GetTodos(userID string, status string, limit int, offset int) ([]models.Todo, error) {
 	todos := make([]models.Todo, 0)
 
-	query := `SELECT id, user_id, title, description, is_completed, is_incomplete, is_pending, expires_at, created_at 
-	          FROM todo WHERE user_id = $1 AND archived_at IS NULL`
+	query := `
+				SELECT
+			      	id,
+			      	user_id,
+			      	title,
+			      	description,
+			      	is_completed,
+			      	is_incomplete,
+			      	is_pending,
+			      	expires_at,
+			      	created_at 
+	          	FROM todo 
+	          	WHERE user_id = $1 AND archived_at IS NULL`
 
 	var args []interface{}
 	args = append(args, userID)
@@ -43,7 +61,8 @@ func GetTodos(userID string, status string) ([]models.Todo, error) {
 		}
 	}
 
-	query += " ORDER BY created_at DESC"
+	//query += " ORDER BY created_at DESC"
+	query += fmt.Sprintf(" ORDER BY created_at DESC LIMIT %d OFFSET %d", limit, offset)
 
 	err := database.Todo.Select(&todos, query, args...)
 	return todos, err
@@ -52,8 +71,18 @@ func GetTodos(userID string, status string) ([]models.Todo, error) {
 func GetTodoBYID(userID, id string) (models.Todo, error) {
 	var todo models.Todo
 	query := `
-				SELECT id, user_id, title, description, is_completed, is_incomplete, is_pending, expires_at, created_at 
-	          	FROM todo WHERE user_id = $1 AND id = $2 AND archived_at IS NULL
+				SELECT 
+				    id,
+				    user_id,
+				    title,
+				    description,
+				    is_completed,
+				    is_incomplete,
+				    is_pending,
+				    expires_at,
+				    created_at 
+	          	FROM todo
+	          	WHERE user_id = $1 AND id = $2 AND archived_at IS NULL
 	          	`
 	err := database.Todo.Get(&todo, query, userID, id)
 	return todo, err
@@ -62,14 +91,14 @@ func GetTodoBYID(userID, id string) (models.Todo, error) {
 func UpdateTodo(todo models.Todo) (models.Todo, error) {
 	var updated models.Todo
 	query := `
-		UPDATE todo 
-		SET title = COALESCE(NULLIF($1, ''), title),
-		    description = COALESCE(NULLIF($2, ''), description),
-		    is_completed = $3, 
-		    is_incomplete = $4, 
-		    is_pending = $5
-		WHERE id = $6 AND user_id = $7 AND archived_at IS NULL
-		RETURNING id, user_id, title, description, is_completed, is_incomplete, is_pending, expires_at, created_at`
+				UPDATE todo 
+				SET title = COALESCE(NULLIF($1, ''), title),
+					description = COALESCE(NULLIF($2, ''), description),
+					is_completed = $3, 
+					is_incomplete = $4, 
+					is_pending = $5
+				WHERE id = $6 AND user_id = $7 AND archived_at IS NULL
+				RETURNING id, user_id, title, description, is_completed, is_incomplete, is_pending, expires_at, created_at`
 
 	err := database.Todo.Get(&updated, query,
 		todo.Title, todo.Description, todo.IsCompleted,

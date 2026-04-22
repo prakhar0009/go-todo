@@ -9,10 +9,10 @@ import (
 )
 
 func IsUserExist(username string) (bool, error) {
-	var exists bool
+	var exist bool
 	query := `SELECT EXISTS (SELECT * FROM users WHERE username = TRIM(LOWER($1)) AND archived_at IS NULL)`
-	err := database.Todo.Get(&exists, query, username)
-	return exists, err
+	err := database.Todo.Get(&exist, query, username)
+	return exist, err
 }
 
 func CreateUser(email, username, password string) error {
