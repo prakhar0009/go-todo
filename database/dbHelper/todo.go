@@ -45,7 +45,7 @@ func GetTodos(userID string, status string, limit int, offset int) ([]models.Tod
 	          	FROM todo 
 	          	WHERE user_id = $1 AND archived_at IS NULL`
 
-	var args []interface{}
+	var args []any
 	args = append(args, userID)
 
 	if status != "" {

@@ -42,10 +42,9 @@ func GetUserByEmail(email string) (*models.User, error) {
 func CreateUserSession(userID string, expiry time.Time) (string, error) {
 	var sessionID string
 
-	err := database.Todo.QueryRow(
-		"INSERT INTO user_session (user_id, expires_at) VALUES ($1, $2) RETURNING id",
-		userID, expiry,
-	).Scan(&sessionID)
+	query := "INSERT INTO user_session (user_id, expires_at) VALUES ($1, $2) RETURNING id"
+
+	err := database.Todo.Get(&sessionID, query, userID, expiry)
 
 	return sessionID, err
 }

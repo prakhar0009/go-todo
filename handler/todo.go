@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -48,20 +49,20 @@ func GetTodos(c *gin.Context) {
 	limitStr := c.DefaultQuery("limit", "10")
 
 	page, err := strconv.Atoi(pageStr)
-	limit, err := strconv.Atoi(limitStr)
-
-	offset := (page - 1) * limit
-
-	if page < 1 {
+	if err != nil || page < 1 {
 		page = 1
 	}
-	if limit < 1 {
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit < 1 {
 		limit = 10
 	}
 
+	offset := (page - 1) * limit
+
 	todos, err := dbHelper.GetTodos(userID, status, limit, offset)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		fmt.Printf("Debug error: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve todos"})
 		return
 	}
 
