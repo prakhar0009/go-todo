@@ -28,7 +28,7 @@ func GetUserByEmail(email string) (*models.User, error) {
 
 	err := database.Todo.Get(
 		&user,
-		"SELECT id, email, username, password FROM users WHERE email=$1 AND archived_at IS NULL",
+		"SELECT id, email, username, password, role FROM users WHERE email=$1 AND archived_at IS NULL",
 		email,
 	)
 
@@ -72,4 +72,15 @@ func GetUserBySession(sessionID string) (string, error) {
 		return "", err
 	}
 	return userId, nil
+}
+
+func UpdateUserRole(userID string, newRole models.UserRole) error {
+	query := `
+				UPDATE users 
+				SET role = $1
+				WHERE id = $2
+				AND archived_at IS NULL
+				`
+	_, err := database.Todo.Exec(query, newRole, userID)
+	return err
 }

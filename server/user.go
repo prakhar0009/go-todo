@@ -17,5 +17,6 @@ func SetupUserRoutes(r *gin.Engine) {
 	v1.Use(middleware.AuthMiddleware())
 	{
 		v1.PUT("/logout", handler.Logout)
+		v1.PUT("/user/role", handler.SwitchRole)
 	}
 }

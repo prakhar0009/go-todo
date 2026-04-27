@@ -91,3 +91,24 @@ func Logout(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "User logged out"})
 }
+
+func SwitchRole(c *gin.Context) {
+	userID := c.GetString("userID")
+
+	var input struct {
+		Role models.UserRole `json:"role" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input, Role required"})
+	}
+	if input.Role != models.RoleUser && input.Role != models.RoleAdmin {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Role must be one of admin or user"})
+	}
+	if err := dbHelper.UpdateUserRole(userID, input.Role); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{})
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Role switched successfully",
+		"role":    input.Role,
+	})
+}
