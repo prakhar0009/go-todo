@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -46,27 +45,26 @@ func Login(c *gin.Context) {
 	var input models.LoginUser
 
 	if err := c.ShouldBindJSON(&input); err != nil {
-		fmt.Printf("Binding Error: %v\n", err)
+		//fmt.Printf("Binding Error: %v\n", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Email and password required"})
 		return
 	}
-	fmt.Printf("Attempting login for: %s with password: %s\n", input.Email, input.Password)
+	//fmt.Printf("Attempting login for: %s with password: %s\n", input.Email, input.Password)
 
 	user, err := dbHelper.GetUserByEmail(input.Email)
 	if err != nil {
-		// This will print the actual database error to your terminal
-		fmt.Printf("Database Error for %s: %v\n", input.Email, err)
+		//fmt.Printf("Database Error for %s: %v\n", input.Email, err)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
 	}
 
 	if !utils.CheckPassword(user.Password, input.Password) {
-		fmt.Println("Password verification failed for user:", input.Email)
+		//fmt.Println("Password verification failed for user:", input.Email)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
 	}
 
-	expiry := time.Now().Add(60 * 24 * time.Hour)
+	expiry := time.Now().AddDate(1, 0, 0)
 	sessionID, err := dbHelper.CreateUserSession(user.ID, expiry)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -76,9 +74,17 @@ func Login(c *gin.Context) {
 	}
 
 	//c.SetCookie("session_token", sessionID, 60*24*3600, "/", "", false, true)
+	// Generate JWT
+	accessToken, err := utils.GenerateAccessToken(user.ID, sessionID, string(user.Role))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create access token"})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"message":    "User logged in successfully",
-		"session_id": sessionID,
+		"message":     "User logged in successfully",
+		"accessToken": accessToken,
+		"session_id":  sessionID,
 	})
 }
 
