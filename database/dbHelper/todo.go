@@ -115,3 +115,25 @@ func DeleteTodo(userID, id string) error {
 	_, err := database.Todo.Exec(query, id, userID)
 	return err
 }
+
+func GetTodosAdmin(limit, offset int) ([]models.Todo, error) {
+	todos := make([]models.Todo, 0)
+	query := `
+				SELECT 
+					id,
+					user_id,
+					title, 
+					description, 
+					is_completed, 
+					is_incomplete, 
+					is_pending, 
+					expires_at, 
+					created_at
+				FROM todo
+				WHERE archived_at IS NULL
+				ORDER BY created_at DESC
+				LIMIT $1 OFFSET $2
+			 `
+	err := database.Todo.Select(&todos, query, limit, offset)
+	return todos, err
+}

@@ -17,6 +17,7 @@ func SetupUserRoutes(r *gin.Engine) {
 	v1.Use(middleware.AuthMiddleware())
 	{
 		v1.PUT("/logout", handler.Logout)
-		v1.PUT("/user/role", handler.SwitchRole)
+		//v1.PUT("/user/role", handler.SwitchRole)
+		// using this route a user can be admin
 	}
 }

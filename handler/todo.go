@@ -43,23 +43,30 @@ func CreateTodo(c *gin.Context) {
 
 func GetTodos(c *gin.Context) {
 	userID := c.GetString("userID")
+	role := c.GetString("role")
 	status := c.Query("status")
 
 	pageStr := c.DefaultQuery("page", "1")
 	limitStr := c.DefaultQuery("limit", "10")
 
-	page, err := strconv.Atoi(pageStr)
-	if err != nil || page < 1 {
+	page, _ := strconv.Atoi(pageStr)
+	if page < 1 {
 		page = 1
 	}
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil || limit < 1 {
+	limit, _ := strconv.Atoi(limitStr)
+	if limit < 1 {
 		limit = 10
 	}
 
 	offset := (page - 1) * limit
-
-	todos, err := dbHelper.GetTodos(userID, status, limit, offset)
+	
+	var todos []models.Todo
+	var err error
+	if role == "admin" {
+		todos, err = dbHelper.GetTodosAdmin(limit, offset)
+	} else {
+		todos, err = dbHelper.GetTodos(userID, status, limit, offset)
+	}
 	if err != nil {
 		fmt.Printf("Debug error: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve todos"})

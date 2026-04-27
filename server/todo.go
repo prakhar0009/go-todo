@@ -10,10 +10,19 @@ func SetupTodoRoutes(r *gin.Engine) {
 	v1 := r.Group("/api/v1")
 	v1.Use(middleware.AuthMiddleware())
 	{
-		v1.POST("/todo", middleware.AdminMiddleware(), handler.CreateTodo)
+		// User routes
+		v1.POST("/todo", handler.CreateTodo)
 		v1.GET("/todos", handler.GetTodos)
 		v1.GET("/todo/:id", handler.GetTodoByID)
 		v1.PUT("/todo/:id", handler.UpdateTodo)
 		v1.DELETE("/todo/:id", middleware.AdminMiddleware(), handler.DeleteTodo)
+
+		// Admin routes
+		//admin := v1.Group("/admin")
+		//admin.Use(middleware.AuthMiddleware()) // only admin can access
+		//{
+		//	admin.GET("/todos", handler.GetTodos)
+		//	admin.DELETE("/")
+		//}
 	}
 }
