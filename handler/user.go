@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -45,17 +46,22 @@ func Login(c *gin.Context) {
 	var input models.LoginUser
 
 	if err := c.ShouldBindJSON(&input); err != nil {
+		fmt.Printf("Binding Error: %v\n", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Email and password required"})
 		return
 	}
+	fmt.Printf("Attempting login for: %s with password: %s\n", input.Email, input.Password)
 
 	user, err := dbHelper.GetUserByEmail(input.Email)
 	if err != nil {
+		// This will print the actual database error to your terminal
+		fmt.Printf("Database Error for %s: %v\n", input.Email, err)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
 	}
 
 	if !utils.CheckPassword(user.Password, input.Password) {
+		fmt.Println("Password verification failed for user:", input.Email)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
 	}

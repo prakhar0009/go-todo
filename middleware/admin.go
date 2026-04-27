@@ -16,12 +16,15 @@ func AdminMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		user, err := dbHelper.GetUserBySession(c.GetHeader("Authorization"))
+		//user, err := dbHelper.GetUserBySession(c.GetHeader("Authorization"))
 
 		role, err := dbHelper.GetUserRoleByID(userID)
 		if err != nil || role != models.RoleAdmin {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			//c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			c.JSON(http.StatusForbidden, gin.H{"error": "admin access required"})
+			c.Abort()
 			return
+
 		}
 		c.Next()
 	}

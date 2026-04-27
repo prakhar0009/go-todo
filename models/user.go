@@ -19,16 +19,22 @@ func (r UserRole) Value() (driver.Value, error) {
 }
 
 // Scan allows the database to read the string into our custom type
+// models/user.go
+
 func (r *UserRole) Scan(value interface{}) error {
 	if value == nil {
 		*r = RoleUser
 		return nil
 	}
-	bv, ok := value.([]byte)
-	if !ok {
-		return errors.New("failed to scan UserRole")
+
+	switch v := value.(type) {
+	case []byte:
+		*r = UserRole(string(v))
+	case string:
+		*r = UserRole(v)
+	default:
+		return errors.New("failed to scan UserRole: incompatible type")
 	}
-	*r = UserRole(string(bv))
 	return nil
 }
 
