@@ -84,3 +84,14 @@ func UpdateUserRole(userID string, newRole models.UserRole) error {
 	_, err := database.Todo.Exec(query, newRole, userID)
 	return err
 }
+
+func GetUserRoleByID(userID string) (models.UserRole, error) {
+	var role models.UserRole
+	query := `
+				SELECT role
+				FROM users
+				WHERE id = $1 AND archived_at IS NULL
+			 `
+	err := database.Todo.Get(&role, query, userID)
+	return role, err
+}
