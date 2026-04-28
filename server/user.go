@@ -19,6 +19,7 @@ func SetupUserRoutes(r *gin.Engine) {
 	admin.Use(middleware.AdminMiddleware()) // must be an admin
 	{
 		admin.GET("/users", handler.GetUsers)
+		admin.PUT("/users/:id", handler.ToggleSuspend)
 	}
 	// Standard user section
 	v1.Use(middleware.AuthMiddleware())

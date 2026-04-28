@@ -64,6 +64,12 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
 	}
+	//fmt.Println(user.IsSuspended)
+	if user.IsSuspended {
+		//fmt.Println("User is suspended")
+		c.JSON(http.StatusForbidden, gin.H{"error": "User is suspended"})
+		return
+	}
 
 	expiry := time.Now().AddDate(1, 0, 0)
 	sessionID, err := dbHelper.CreateUserSession(user.ID, expiry)
@@ -129,6 +135,31 @@ func GetUsers(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"users": users})
+}
+
+func ToggleSuspend(c *gin.Context) {
+	targetUserID := c.Param("id")
+	var input struct {
+		Suspend bool `json:"suspend"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
+	}
+
+	// Call the new helper with transaction
+	err := dbHelper.SetUserSuspension(c.Request.Context(), targetUserID, input.Suspend)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update suspension status"})
+		return
+	}
+
+	status := "unsuspended"
+	if input.Suspend {
+		status = "suspended"
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "User " + status + " successfully"})
 }
 
 //func SwitchRole(c *gin.Context) {

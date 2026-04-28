@@ -1,9 +1,11 @@
 package dbHelper
 
 import (
+	"context"
 	"fmt"
 	"time"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/prakhar0009/go-todo/database"
 	"github.com/prakhar0009/go-todo/models"
 )
@@ -28,7 +30,7 @@ func GetUserByEmail(email string) (*models.User, error) {
 
 	err := database.Todo.Get(
 		&user,
-		"SELECT id, email, username, password, role FROM users WHERE email=$1 AND archived_at IS NULL",
+		"SELECT id, email, username, password, role, is_suspended, created_at FROM users WHERE email=$1 AND archived_at IS NULL",
 		email,
 	)
 
@@ -117,4 +119,25 @@ func GetAllUsers(limit, offset int) ([]models.User, error) {
 		err = database.Todo.Select(&users, query)
 	}
 	return users, err
+}
+
+func SetUserSuspension(ctx context.Context, userID string, suspend bool) error {
+	return database.WithTransaction(ctx, func(tx *sqlx.Tx) error {
+		// Update user suspension status
+		_, err := tx.ExecContext(ctx, "UPDATE users SET is_suspended = $1 WHERE id = $2", suspend, userID)
+		if err != nil {
+			return err
+		}
+
+		// Handle Todos visibility
+		if suspend {
+			// Set archived_at to now for all active todos
+			_, err = tx.ExecContext(ctx, "UPDATE todo SET archived_at = NOW() WHERE user_id = $1 AND archived_at IS NULL", userID)
+		} else {
+			// Restore todos by clearing archived_at
+			_, err = tx.ExecContext(ctx, "UPDATE todo SET archived_at = NULL WHERE user_id = $1", userID)
+		}
+
+		return err
+	})
 }

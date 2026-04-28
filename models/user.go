@@ -19,7 +19,6 @@ func (r UserRole) Value() (driver.Value, error) {
 }
 
 // Scan allows the database to read the string into our custom type
-// models/user.go
 
 func (r *UserRole) Scan(value interface{}) error {
 	if value == nil {
@@ -39,12 +38,13 @@ func (r *UserRole) Scan(value interface{}) error {
 }
 
 type User struct {
-	ID        string   `db:"id" json:"id"`
-	Email     string   `db:"email" json:"email"`
-	Username  string   `db:"username" json:"username"`
-	Password  string   `db:"password" json:"-"`
-	Role      UserRole `db:"role" json:"role"`
-	CreatedAt string   `db:"created_at" json:"created_at"`
+	ID          string   `db:"id" json:"id"`
+	Email       string   `db:"email" json:"email"`
+	Username    string   `db:"username" json:"username"`
+	Password    string   `db:"password" json:"-"`
+	Role        UserRole `db:"role" json:"role"`
+	CreatedAt   string   `db:"created_at" json:"created_at"`
+	IsSuspended bool     `db:"is_suspended" json:"is_suspended"`
 }
 
 type CreateUser struct {

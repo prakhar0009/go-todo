@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -61,6 +62,35 @@ func migrateUp(db *sqlx.DB) error {
 
 	fmt.Println("Migrations applied successfully")
 	return nil
+}
+
+func WithTransaction(ctx context.Context, fn func(*sqlx.Tx) error) error {
+	tx, err := Todo.BeginTxx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	defer func() {
+		if p := recover(); p != nil {
+			err := tx.Rollback()
+			if err != nil {
+				return
+			}
+			panic(p) // re-throw panic after rollback
+		} else if err != nil {
+			err := tx.Rollback()
+			if err != nil {
+				return
+			}
+		}
+	}()
+
+	err = fn(tx)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
 }
 
 //DB - dbHelper (queries) - handler(funs) - server/routes
