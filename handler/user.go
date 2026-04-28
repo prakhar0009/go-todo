@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -102,6 +103,32 @@ func Logout(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "User logged out"})
+}
+
+func GetUsers(c *gin.Context) {
+	limitStr := c.Query("limit")
+	pageStr := c.Query("page")
+
+	limit, _ := strconv.Atoi(limitStr)
+	page, _ := strconv.Atoi(pageStr)
+
+	var users []models.User
+	var err error
+
+	if page > 0 {
+		if limit <= 0 {
+			limit = 10
+		}
+		offset := (page - 1) * limit
+		users, err = dbHelper.GetAllUsers(limit, offset)
+	} else {
+		users, err = dbHelper.GetAllUsers(limit, -1)
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get users"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"users": users})
 }
 
 //func SwitchRole(c *gin.Context) {

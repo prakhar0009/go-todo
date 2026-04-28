@@ -17,12 +17,13 @@ func SetupTodoRoutes(r *gin.Engine) {
 		v1.PUT("/todo/:id", handler.UpdateTodo)
 		v1.DELETE("/todo/:id", middleware.AdminMiddleware(), handler.DeleteTodo)
 
+
 		// Admin routes
-		//admin := v1.Group("/admin")
-		//admin.Use(middleware.AuthMiddleware()) // only admin can access
-		//{
-		//	admin.GET("/todos", handler.GetTodos)
-		//	admin.DELETE("/")
-		//}
+		admin := v1.Group("/admin")
+		admin.Use(middleware.AdminMiddleware()) // only admin can access
+		{
+			admin.GET("/todos", handler.GetTodos)
+			admin.DELETE("/")
+		}
 	}
 }

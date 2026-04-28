@@ -13,11 +13,17 @@ func SetupUserRoutes(r *gin.Engine) {
 	v1.POST("/register", handler.Register)
 	v1.POST("/login", handler.Login)
 
-	//Protected routes
+	// Admin routes
+	admin := v1.Group("/admin")
+	admin.Use(middleware.AuthMiddleware())  // must be logged in
+	admin.Use(middleware.AdminMiddleware()) // must be an admin
+	{
+		admin.GET("/users", handler.GetUsers)
+	}
+	// Standard user section
 	v1.Use(middleware.AuthMiddleware())
 	{
 		v1.PUT("/logout", handler.Logout)
-		//v1.PUT("/user/role", handler.SwitchRole)
-		// using this route a user can be admin
+		//v1.PUT("/user/role", handler.SwitchRole) // using this route a user can be admin
 	}
 }

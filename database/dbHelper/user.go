@@ -95,3 +95,26 @@ func GetUserRoleByID(userID string) (models.UserRole, error) {
 	err := database.Todo.Get(&role, query, userID)
 	return role, err
 }
+
+func GetAllUsers(limit, offset int) ([]models.User, error) {
+	var users []models.User
+	query := `
+				SELECT
+				    id,
+				    email,
+				    username,
+				    role,
+				    created_at
+				FROM users 
+				WHERE archived_at IS NULL
+				ORDER BY  created_at DESC
+				`
+	var err error
+	if offset >= 0 {
+		query += ` LIMIT $1 OFFSET $2`
+		err = database.Todo.Select(&users, query, limit, offset)
+	} else {
+		err = database.Todo.Select(&users, query)
+	}
+	return users, err
+}
