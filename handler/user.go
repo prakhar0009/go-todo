@@ -90,7 +90,7 @@ func Login(c *gin.Context) {
 }
 
 func Logout(c *gin.Context) {
-	sessionID := c.GetHeader("Authorization")
+	sessionID := c.GetString("sessionID")
 	if sessionID == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "No active session"})
 		return
